@@ -1,0 +1,8 @@
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Force shell scripts to always use LF line endings (Unix style)
+*.sh text eol=lf
+
+# Ensure entrypoint scripts always have Unix line endings
+**/entrypoint.sh text eol=lf
