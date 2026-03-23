@@ -10,13 +10,10 @@ services:
       - "5000:5000"
     environment:
       - FLASK_ENV=development
-      - DATABASE_URL=sqlite:///instance/soc_shifts.db
-    volumes:
-      - backend-data:/app/instance
     networks:
       - soc-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/analysts"]
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/analysts || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -38,10 +35,6 @@ services:
       - soc-network
     stdin_open: true
     tty: true
-
-volumes:
-  backend-data:
-    driver: local
 
 networks:
   soc-network:
