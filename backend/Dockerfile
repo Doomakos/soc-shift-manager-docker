@@ -12,10 +12,13 @@ RUN pip install --no-cache-dir --trusted-host pypi.org --trusted-host files.pyth
 # Copy application code
 COPY app.py .
 COPY init_db.py .
+COPY entrypoint.sh .
+
+# Make entrypoint executable
+RUN chmod +x entrypoint.sh
 
 # Expose port
 EXPOSE 5000
 
-# Initialize database with sample data and start the app
-# Create instance directory at runtime (after volume mount)
-CMD mkdir -p instance && python init_db.py && python app.py
+# Use entrypoint script to handle setup and startup
+ENTRYPOINT ["/app/entrypoint.sh"]
