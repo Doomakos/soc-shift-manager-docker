@@ -3,8 +3,8 @@
 ## One-Command Setup
 
 ```bash
-git clone https://github.com/Doomakos/soc-shifts-manager-main.git
-cd soc-shifts-manager-main
+git clone https://github.com/Doomakos/soc-shift-manager-docker.git
+cd soc-shift-manager-docker
 ./docker-start.sh
 ```
 

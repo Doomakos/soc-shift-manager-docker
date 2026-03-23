@@ -33,8 +33,8 @@ The easiest way to run the application with sample data:
 
 ```bash
 # Clone and run
-git clone https://github.com/Doomakos/soc-shifts-manager-main.git
-cd soc-shifts-manager-main
+git clone https://github.com/Doomakos/soc-shift-manager-docker.git
+cd soc-shift-manager-docker
 docker-compose up --build
 ```
 
