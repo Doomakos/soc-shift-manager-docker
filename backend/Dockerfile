@@ -13,8 +13,8 @@ RUN pip install --no-cache-dir --trusted-host pypi.org --trusted-host files.pyth
 COPY app.py .
 COPY init_db.py .
 
-# Create instance directory for SQLite database
-RUN mkdir -p instance
+# Create instance directory for SQLite database with proper permissions
+RUN mkdir -p instance && chmod 777 instance
 
 # Expose port
 EXPOSE 5000
