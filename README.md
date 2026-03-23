@@ -1,0 +1,1 @@
+# soc-shift-manager-docker
