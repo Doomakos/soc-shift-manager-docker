@@ -10,14 +10,9 @@ services:
       - "5000:5000"
     environment:
       - FLASK_ENV=development
+      - FLASK_RUN_HOST=0.0.0.0
     networks:
       - soc-network
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/analysts || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
   frontend:
     build:
