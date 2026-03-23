@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+venv/
+env/
+ENV/
+
+# Database (never commit real data)
+instance/
+*.db
+*.sqlite
+*.sqlite3
+*_backup.json
+
+# Logs
+*.log
+*.pid
+
+# Environment
+.env
+.env.local
+
+# Build outputs
+build/
+dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+*Zone.Identifier*
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
