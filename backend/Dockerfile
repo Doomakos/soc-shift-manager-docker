@@ -12,13 +12,13 @@ RUN pip install --no-cache-dir --trusted-host pypi.org --trusted-host files.pyth
 # Copy application code
 COPY app.py .
 COPY init_db.py .
-COPY entrypoint.sh .
+COPY entrypoint.py .
 
 # Make entrypoint executable
-RUN chmod +x entrypoint.sh
+RUN chmod +x entrypoint.py
 
 # Expose port
 EXPOSE 5000
 
-# Use entrypoint script to handle setup and startup
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Use Python entrypoint script (no line ending issues)
+ENTRYPOINT ["python", "entrypoint.py"]
