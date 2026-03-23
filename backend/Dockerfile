@@ -10,8 +10,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY app.py .
 COPY init_db.py .
-COPY migrate_data.py .
-COPY export_data.py .
 
 # Create instance directory for SQLite database
 RUN mkdir -p instance
