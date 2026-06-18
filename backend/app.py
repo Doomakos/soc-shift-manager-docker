@@ -1898,39 +1898,10 @@ def get_team_payroll_summary():
 
 @app.route("/api/init", methods=["POST"])
 def initialize_database():
-    """Initialize database with default pay rules"""
+    """Create database tables on first load."""
     try:
         db.create_all()
-
-        # Add default pay rules if they don't exist
-        if PayRule.query.count() == 0:
-            default_rules = [
-                PayRule(
-                    rule_name="Sunday Premium",
-                    day_of_week=6,  # Sunday
-                    multiplier=1.75,
-                    description="Sunday shifts: +75% pay",
-                ),
-                PayRule(
-                    rule_name="Saturday Premium",
-                    day_of_week=5,  # Saturday
-                    multiplier=1.5,
-                    description="Saturday shifts: +50% pay",
-                ),
-                PayRule(
-                    rule_name="Weekday Regular",
-                    day_of_week=None,
-                    multiplier=1.0,
-                    description="Weekday shifts: regular pay",
-                ),
-            ]
-
-            for rule in default_rules:
-                db.session.add(rule)
-
-            db.session.commit()
-
-        return jsonify({"message": "Database initialized successfully"}), 200
+        return jsonify({"message": "Database ready"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 

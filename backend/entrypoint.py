@@ -19,7 +19,7 @@ def main():
     # Initialize database if it doesn't exist
     db_path = os.path.join(instance_dir, "soc_shift_manager.db")
     if not os.path.exists(db_path):
-        print("Initializing database with sample data...")
+        print("Initializing database schema...")
         subprocess.run([sys.executable, "init_db.py"], check=True)
         print("✓ Database initialized successfully")
     else:
