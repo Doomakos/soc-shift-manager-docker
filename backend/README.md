@@ -113,3 +113,16 @@ Database issues:
 
 Connection issues from frontend:
 - Confirm frontend API URL targets correct backend port
+
+Quick custom port run commands:
+
+Windows PowerShell:
+```powershell
+$env:PORT=5001
+python app.py
+```
+
+macOS/Linux:
+```bash
+PORT=5001 python app.py
+```

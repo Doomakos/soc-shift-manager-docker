@@ -16,6 +16,16 @@ Open:
 
 Create .env in project root:
 
+Windows PowerShell:
+```powershell
+Copy-Item .env.example .env
+```
+
+macOS/Linux:
+```bash
+cp .env.example .env
+```
+
 ```env
 BACKEND_PORT=5001
 FRONTEND_PORT=3001

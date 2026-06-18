@@ -27,6 +27,18 @@ Then open:
 
 For port overrides, set BACKEND_PORT and FRONTEND_PORT in root .env.
 
+Create .env from template:
+
+Windows PowerShell:
+```powershell
+Copy-Item .env.example .env
+```
+
+macOS/Linux:
+```bash
+cp .env.example .env
+```
+
 ## Documentation
 - README.md
 - DOCKER_SETUP.md

@@ -64,6 +64,19 @@ Frontend cannot reach API:
 - Verify REACT_APP_API_URL value
 - Restart frontend after .env changes
 
+Run frontend on a different local port:
+
+Windows PowerShell:
+```powershell
+$env:PORT=3001
+npm start
+```
+
+macOS/Linux:
+```bash
+PORT=3001 npm start
+```
+
 Build issues:
 - Delete node_modules and run npm install
 - Confirm compatible Node.js version

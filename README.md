@@ -39,6 +39,8 @@ BACKEND_PORT=5001
 FRONTEND_PORT=3001
 ```
 
+Tip: copy `.env.example` to `.env` and then edit values.
+
 Then start normally:
 ```bash
 docker-compose up --build
@@ -52,7 +54,7 @@ A sample file is provided at .env.example.
 
 ## Local Development Setup (Without Docker)
 
-## 1. Backend
+### 1. Backend
 ```bash
 cd backend
 python -m venv venv
@@ -92,7 +94,7 @@ macOS/Linux:
 PORT=5001 python app.py
 ```
 
-## 2. Frontend
+### 2. Frontend
 In a second terminal:
 ```bash
 cd frontend
@@ -105,6 +107,19 @@ Frontend runs on http://localhost:3000 by default.
 If backend uses a custom port, create frontend/.env:
 ```env
 REACT_APP_API_URL=http://localhost:5001/api
+```
+
+To run frontend on another port:
+
+Windows PowerShell:
+```powershell
+$env:PORT=3001
+npm start
+```
+
+macOS/Linux:
+```bash
+PORT=3001 npm start
 ```
 
 ## Common Commands

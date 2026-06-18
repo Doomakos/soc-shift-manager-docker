@@ -136,10 +136,24 @@ python init_db.py
 - Backend: set PORT before python app.py
 - Frontend: set PORT before npm start
 
-Windows PowerShell example:
+Windows PowerShell examples:
 ```powershell
+# Backend
+$env:PORT=5001
+python app.py
+
+# Frontend
 $env:PORT=3001
 npm start
+```
+
+macOS/Linux examples:
+```bash
+# Backend
+PORT=5001 python app.py
+
+# Frontend
+PORT=3001 npm start
 ```
 
 ## Next Steps
