@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { buildApiUrl } from '../api';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -28,6 +30,17 @@ const Login = () => {
             navigate('/');
         }
     }, [isAuthenticated, navigate]);
+
+    // Redirect to setup if no admin exists yet
+    useEffect(() => {
+        axios.get(buildApiUrl('/auth/setup'))
+            .then(res => {
+                if (res.data.needs_setup) {
+                    navigate('/setup', { replace: true });
+                }
+            })
+            .catch(() => {}); // silently ignore – show login as fallback
+    }, [navigate]);
 
     const handleChange = (e) => {
         setFormData({

@@ -36,13 +36,26 @@ FRONTEND_PORT=3001
 A sample file is available as .env.example.
 
 ## 3. Start Application
+
+> **Important — first run or fresh start**: `docker compose up --build` rebuilds
+> the image but keeps any existing database volume. If you want a completely clean
+> database (e.g. to reach the first-admin setup screen), wipe the volume first:
+>
+> ```bash
+> docker compose down -v
+> docker compose up --build
+> ```
+>
+> If you are starting for the very first time and have never run the app before,
+> `docker compose up --build` alone is sufficient.
+
 ```bash
 docker compose up --build
 ```
 
 This will:
 - Build backend and frontend images
-- Initialize local database
+- Initialize local database (only if no existing volume is present)
 - Start both services
 
 ## 4. Access the App

@@ -24,6 +24,14 @@ fi
 
 echo "✅ Docker and Docker Compose are installed"
 echo ""
+
+# Detect if this looks like a first-run (no containers have ever started)
+if ! docker compose ps --quiet 2>/dev/null | grep -q .; then
+    echo "ℹ️  Tip: If you want a completely clean database, run first:"
+    echo "     docker compose down -v"
+    echo ""
+fi
+
 echo "🚀 Starting SOC Shift Manager..."
 echo "   This will:"
 echo "   - Build Docker images (first time may take a few minutes)"
