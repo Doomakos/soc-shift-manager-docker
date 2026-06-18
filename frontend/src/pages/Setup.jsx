@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { buildApiUrl } from '../api';
 
 const Setup = () => {
     const navigate = useNavigate();
@@ -44,7 +45,7 @@ const Setup = () => {
         setLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/setup', {
+            const response = await axios.post(buildApiUrl('/auth/setup'), {
                 username: formData.username,
                 email: formData.email,
                 password: formData.password,

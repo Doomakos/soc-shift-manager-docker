@@ -15,7 +15,7 @@ import PayRulesManagement from './pages/PayRulesManagement';
 import StandbyManagement from './pages/StandbyManagement';
 import UserManagement from './pages/UserManagement';
 import Profile from './pages/Profile';
-import { systemAPI } from './api';
+import { buildApiUrl, systemAPI } from './api';
 import axios from 'axios';
 
 // Navigation component with role-aware UI
@@ -128,7 +128,7 @@ function FirstRunCheck({ children }) {
     useEffect(() => {
         const checkSetup = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/auth/setup');
+                const response = await axios.get(buildApiUrl('/auth/setup'));
                 setNeedsSetup(response.data.needs_setup);
             } catch (error) {
                 console.error('Setup check failed:', error);

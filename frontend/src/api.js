@@ -1,6 +1,12 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const defaultBackendPort = process.env.REACT_APP_BACKEND_PORT || '5000';
+export const API_BASE_URL =
+    process.env.REACT_APP_API_URL ||
+    `${window.location.protocol}//${window.location.hostname}:${defaultBackendPort}/api`;
+
+export const buildApiUrl = (path = '') =>
+    `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -37,7 +43,7 @@ api.interceptors.response.use(
             if (refreshToken) {
                 try {
                     const response = await axios.post(
-                        'http://localhost:5000/api/auth/refresh',
+                        buildApiUrl('/auth/refresh'),
                         {},
                         {
                             headers: {

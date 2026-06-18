@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserPlus, Loader, CheckCircle } from 'lucide-react';
 import axios from 'axios';
+import { buildApiUrl } from '../api';
 
 export default function Register() {
     const navigate = useNavigate();
@@ -47,7 +48,7 @@ export default function Register() {
 
         try {
             setLoading(true);
-            await axios.post('http://localhost:5000/api/auth/register', {
+            await axios.post(buildApiUrl('/auth/register'), {
                 username: formData.username,
                 email: formData.email,
                 password: formData.password

@@ -35,12 +35,23 @@ The easiest way to run the application with sample data:
 # Clone and run
 git clone https://github.com/Doomakos/soc-shift-manager-docker.git
 cd soc-shift-manager-docker
+# Optional: configure host ports before startup
+# cp .env.example .env
 docker-compose up --build
 ```
 
 **That's it!** Access the app at:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:5000
+
+To change ports, create a root `.env` file (or export env vars) before running Docker:
+```
+BACKEND_PORT=5001
+FRONTEND_PORT=3001
+```
+Then access:
+- Frontend: `http://localhost:${FRONTEND_PORT}`
+- Backend API: `http://localhost:${BACKEND_PORT}`
 
 The application will automatically initialize with sample data including 12 analysts and 90 days of shift history.
 
@@ -63,6 +74,15 @@ python app.py
 ```
 
 The backend will start on `http://localhost:5000`
+
+To use a different backend port:
+```bash
+# Linux/macOS
+PORT=5001 python app.py
+
+# Windows PowerShell
+$env:PORT=5001; python app.py
+```
 
 #### Frontend Setup
 
@@ -188,6 +208,8 @@ In frontend, create `.env`:
 ```
 REACT_APP_API_URL=http://localhost:5000/api
 ```
+
+If backend runs on another port, update `REACT_APP_API_URL` accordingly.
 
 ## 📝 Example Workflow
 

@@ -5,6 +5,9 @@ echo "🐳 SOC Shift Manager - Docker Quick Start"
 echo "=========================================="
 echo ""
 
+BACKEND_PORT=${BACKEND_PORT:-5000}
+FRONTEND_PORT=${FRONTEND_PORT:-3000}
+
 # Check if Docker is installed
 if ! command -v docker &> /dev/null; then
     echo "❌ Docker is not installed. Please install Docker Desktop first:"
@@ -25,8 +28,8 @@ echo "🚀 Starting SOC Shift Manager..."
 echo "   This will:"
 echo "   - Build Docker images (first time may take a few minutes)"
 echo "   - Initialize database with sample data"
-echo "   - Start backend on http://localhost:5000"
-echo "   - Start frontend on http://localhost:3000"
+echo "   - Start backend on http://localhost:${BACKEND_PORT}"
+echo "   - Start frontend on http://localhost:${FRONTEND_PORT}"
 echo ""
 
 # Build and start containers
@@ -43,8 +46,8 @@ if [ $? -eq 0 ]; then
     echo "🎉 SOC Shift Manager is running!"
     echo ""
     echo "Access the application:"
-    echo "  🌐 Frontend: http://localhost:3000"
-    echo "  🔌 Backend API: http://localhost:5000"
+    echo "  🌐 Frontend: http://localhost:${FRONTEND_PORT}"
+    echo "  🔌 Backend API: http://localhost:${BACKEND_PORT}"
     echo ""
     echo "Sample data includes:"
     echo "  👥 12 SOC Level 1 Analysts"

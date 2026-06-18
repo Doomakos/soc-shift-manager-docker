@@ -17,6 +17,7 @@ cd soc-shift-manager-docker
 
 ### 2. Start the Application
 ```bash
+# Optional: configure ports first (copy .env.example to .env)
 docker-compose up --build
 ```
 
@@ -107,11 +108,14 @@ python export_data.py  # Export data to JSON
 ## 🛠️ Troubleshooting
 
 ### Port Already in Use
-If ports 3000 or 5000 are already in use, edit `docker-compose.yml`:
-```yaml
-ports:
-  - "3001:3000"  # Change frontend port
-  - "5001:5000"  # Change backend port
+Set custom host ports in a root `.env` file:
+```
+BACKEND_PORT=5001
+FRONTEND_PORT=3001
+```
+Then run:
+```bash
+docker-compose up --build
 ```
 
 ### Frontend Not Loading
