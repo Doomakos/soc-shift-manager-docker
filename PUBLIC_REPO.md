@@ -18,7 +18,7 @@ This repository is the public Docker-ready version of SOC Shift Manager.
 ```bash
 git clone https://github.com/Doomakos/soc-shift-manager-docker.git
 cd soc-shift-manager-docker
-docker-compose up --build
+docker compose up --build
 ```
 
 Then open:

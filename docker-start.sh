@@ -16,7 +16,7 @@ if ! command -v docker &> /dev/null; then
 fi
 
 # Check if Docker Compose is installed
-if ! command -v docker-compose &> /dev/null; then
+if ! command -v docker compose &> /dev/null; then
     echo "❌ Docker Compose is not installed. Please install Docker Compose first:"
     echo "   https://docs.docker.com/compose/install/"
     exit 1
@@ -33,7 +33,7 @@ echo "   - Start frontend on http://localhost:${FRONTEND_PORT}"
 echo ""
 
 # Build and start containers
-docker-compose up --build -d
+docker compose up --build -d
 
 if [ $? -eq 0 ]; then
     echo ""
@@ -55,13 +55,13 @@ if [ $? -eq 0 ]; then
     echo "  💰 Greek labor law pay rules"
     echo ""
     echo "View logs:"
-    echo "  docker-compose logs -f"
+    echo "  docker compose logs -f"
     echo ""
     echo "Stop the application:"
-    echo "  docker-compose down"
+    echo "  docker compose down"
     echo ""
     echo "Reset database (removes all data):"
-    echo "  docker-compose down -v"
+    echo "  docker compose down -v"
     echo ""
 else
     echo "❌ Failed to start application. Check the error messages above."

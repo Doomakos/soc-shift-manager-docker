@@ -95,7 +95,7 @@ soc-shift-manager-docker/
   frontend/
     src/
     package.json
-  docker-compose.yml
+  docker compose.yml
   README.md
   DOCKER_SETUP.md
 ```

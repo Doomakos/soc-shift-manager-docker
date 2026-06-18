@@ -5,7 +5,7 @@
 ```bash
 git clone https://github.com/Doomakos/soc-shift-manager-docker.git
 cd soc-shift-manager-docker
-docker-compose up --build
+docker compose up --build
 ```
 
 Open:
@@ -33,32 +33,32 @@ FRONTEND_PORT=3001
 
 Start again:
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 ## Useful Commands
 
 Start (detached):
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 Logs:
 ```bash
-docker-compose logs -f
-docker-compose logs -f backend
-docker-compose logs -f frontend
+docker compose logs -f
+docker compose logs -f backend
+docker compose logs -f frontend
 ```
 
 Stop:
 ```bash
-docker-compose down
+docker compose down
 ```
 
 Reset data:
 ```bash
-docker-compose down -v
-docker-compose up --build
+docker compose down -v
+docker compose up --build
 ```
 
 ## First Run

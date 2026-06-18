@@ -20,7 +20,7 @@ This is the easiest way to run the app locally.
 ```bash
 git clone https://github.com/Doomakos/soc-shift-manager-docker.git
 cd soc-shift-manager-docker
-docker-compose up --build
+docker compose up --build
 ```
 
 ### 3. Open the app
@@ -43,7 +43,7 @@ Tip: copy `.env.example` to `.env` and then edit values.
 
 Then start normally:
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 Access points will be:
@@ -126,25 +126,25 @@ PORT=3001 npm start
 
 Start in background:
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 View logs:
 ```bash
-docker-compose logs -f
-docker-compose logs -f backend
-docker-compose logs -f frontend
+docker compose logs -f
+docker compose logs -f backend
+docker compose logs -f frontend
 ```
 
 Stop services:
 ```bash
-docker-compose down
+docker compose down
 ```
 
 Reset local data:
 ```bash
-docker-compose down -v
-docker-compose up --build
+docker compose down -v
+docker compose up --build
 ```
 
 ## Troubleshooting
@@ -156,12 +156,12 @@ docker-compose up --build
 
 ### Port already in use
 - Change BACKEND_PORT and FRONTEND_PORT in root .env
-- Restart with docker-compose up --build
+- Restart with docker compose up --build
 
 ### Fresh start
 ```bash
-docker-compose down -v --rmi all
-docker-compose up --build
+docker compose down -v --rmi all
+docker compose up --build
 ```
 
 ## Documentation Map

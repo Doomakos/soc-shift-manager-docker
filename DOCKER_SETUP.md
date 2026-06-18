@@ -37,7 +37,7 @@ A sample file is available as .env.example.
 
 ## 3. Start Application
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 This will:
@@ -51,37 +51,37 @@ This will:
 
 ## 5. Stop the App
 ```bash
-docker-compose down
+docker compose down
 ```
 
 ## Operations
 
 Run in background:
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 View logs:
 ```bash
-docker-compose logs -f
-docker-compose logs -f backend
-docker-compose logs -f frontend
+docker compose logs -f
+docker compose logs -f backend
+docker compose logs -f frontend
 ```
 
 Restart services:
 ```bash
-docker-compose restart
+docker compose restart
 ```
 
 Rebuild images:
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 Reset local data:
 ```bash
-docker-compose down -v
-docker-compose up --build
+docker compose down -v
+docker compose up --build
 ```
 
 ## Troubleshooting
@@ -98,8 +98,8 @@ docker-compose up --build
 
 ### Full reset
 ```bash
-docker-compose down -v --rmi all
-docker-compose up --build
+docker compose down -v --rmi all
+docker compose up --build
 ```
 
 ## Security Note
