@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { buildApiUrl } from '../api';
+import { buildApiUrl, API_BASE_URL } from '../api';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -16,6 +16,7 @@ const Login = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [backendUnreachable, setBackendUnreachable] = useState(false);
 
     // Show success message if redirected from setup
     useEffect(() => {
@@ -35,11 +36,14 @@ const Login = () => {
     useEffect(() => {
         axios.get(buildApiUrl('/auth/setup'))
             .then(res => {
+                setBackendUnreachable(false);
                 if (res.data.needs_setup) {
                     navigate('/setup', { replace: true });
                 }
             })
-            .catch(() => {}); // silently ignore – show login as fallback
+            .catch(() => {
+                setBackendUnreachable(true);
+            });
     }, [navigate]);
 
     const handleChange = (e) => {
@@ -97,6 +101,17 @@ const Login = () => {
                         </h1>
                         <p className="text-gray-600 text-sm">Sign in to continue</p>
                     </div>
+
+                    {/* Backend unreachable warning */}
+                    {backendUnreachable && (
+                        <div className="bg-orange-50 border border-orange-300 text-orange-800 px-4 py-3 rounded mb-4 text-sm">
+                            <strong>Backend not reachable.</strong> Cannot connect to{' '}
+                            <code className="break-all">{API_BASE_URL}</code>.
+                            <br />
+                            Make sure the backend container is running:
+                            <pre className="mt-1 text-xs">docker compose logs backend</pre>
+                        </div>
+                    )}
 
                     {/* Success Message */}
                     {successMessage && (
