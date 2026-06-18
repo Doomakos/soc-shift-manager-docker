@@ -1,160 +1,96 @@
-# 🐳 Docker Setup for SOC Shift Manager
+# Docker Setup for SOC Shift Manager
 
-This guide will help you run the SOC Shift Manager application using Docker with sample data.
+This guide is for users who want a reliable local setup with minimal manual steps.
 
-## 📋 Prerequisites
+## Prerequisites
+- Docker Desktop
+- Docker Compose
 
-- Docker Desktop installed ([Download here](https://www.docker.com/products/docker-desktop))
-- Docker Compose (included with Docker Desktop)
-
-## 🚀 Quick Start
-
-### 1. Clone the Repository
+## 1. Clone Repository
 ```bash
 git clone https://github.com/Doomakos/soc-shift-manager-docker.git
 cd soc-shift-manager-docker
 ```
 
-### 2. Start the Application
+## 2. Optional Port Configuration
+
+If default ports are available, skip this step.
+
+If ports are in use, create .env in project root:
+
+```env
+BACKEND_PORT=5001
+FRONTEND_PORT=3001
+```
+
+A sample file is available as .env.example.
+
+## 3. Start Application
 ```bash
-# Optional: configure ports first (copy .env.example to .env)
 docker-compose up --build
 ```
 
-This single command will:
-- Build both backend and frontend Docker images
-- Initialize a fresh database with sample data
+This will:
+- Build backend and frontend images
+- Initialize local database
 - Start both services
 
-### 3. Access the Application
-- **Frontend UI**: http://localhost:3000
-- **Backend API**: http://localhost:5000
+## 4. Access the App
+- Frontend: http://localhost:3000 (or FRONTEND_PORT)
+- Backend API: http://localhost:5000/api (or BACKEND_PORT)
 
-### 4. Stop the Application
-Press `Ctrl+C` in the terminal, then run:
+## 5. Stop the App
 ```bash
 docker-compose down
 ```
 
-## 📊 Sample Data
+## Operations
 
-The application automatically initializes with:
-- **12 SOC Level 1 Analysts** with varying hourly rates
-- **Greek Labor Law Pay Rules**:
-  - Normal weekday: 1.0x
-  - Night hours (22:00-06:00): 1.25x
-  - Saturday day: 1.5x
-  - Saturday night: 1.75x
-  - Sunday day: 1.75x
-  - Sunday night: 2.0x
-  - Holiday day: 2.0x
-  - Holiday night: 2.5x
-- **90 days of historical shift data** (randomly distributed)
-
-## 🔧 Advanced Usage
-
-### Run in Detached Mode (Background)
+Run in background:
 ```bash
 docker-compose up -d
 ```
 
-### View Logs
+View logs:
 ```bash
-# All services
 docker-compose logs -f
-
-# Backend only
 docker-compose logs -f backend
-
-# Frontend only
 docker-compose logs -f frontend
 ```
 
-### Restart Services
+Restart services:
 ```bash
 docker-compose restart
 ```
 
-### Clean Everything (including database)
-```bash
-docker-compose down -v
-```
-This removes containers, networks, and volumes (including the database).
-
-### Rebuild After Code Changes
+Rebuild images:
 ```bash
 docker-compose up --build
 ```
 
-## 🗄️ Database Management
-
-### Reset Database to Sample Data
+Reset local data:
 ```bash
 docker-compose down -v
 docker-compose up --build
 ```
 
-### Access the Backend Container
-```bash
-docker exec -it soc-backend /bin/bash
-```
+## Troubleshooting
 
-Once inside, you can run:
-```bash
-python init_db.py  # Reinitialize with sample data
-python export_data.py  # Export data to JSON
-```
+### Frontend not loading
+- Wait for frontend build to complete
+- Check frontend logs
+- Refresh browser
 
-## 🛠️ Troubleshooting
+### Backend API not reachable
+- Check backend logs
+- Confirm backend port in .env if customized
+- Confirm REACT_APP_API_URL is set correctly if running frontend outside Docker
 
-### Port Already in Use
-Set custom host ports in a root `.env` file:
-```
-BACKEND_PORT=5001
-FRONTEND_PORT=3001
-```
-Then run:
-```bash
-docker-compose up --build
-```
-
-### Frontend Not Loading
-1. Wait 30-60 seconds for the React app to compile
-2. Check logs: `docker-compose logs frontend`
-3. Try refreshing the browser
-
-### Backend API Not Responding
-1. Check if backend is healthy: `docker ps`
-2. View logs: `docker-compose logs backend`
-3. Verify database initialization completed
-
-### Reset Everything
+### Full reset
 ```bash
 docker-compose down -v --rmi all
 docker-compose up --build
 ```
 
-## 📁 Data Persistence
-
-- Database is stored in a Docker volume named `soc-shift-manager_backend-data`
-- Data persists between container restarts
-- To reset data, remove the volume: `docker-compose down -v`
-
-## 🔐 Security Notes
-
-- This setup is for **development/demo purposes only**
-- No authentication is enabled by default
-- Do not use in production without proper security configurations
-- Never commit sensitive data or production databases
-
-## 🤝 Contributing
-
-For development without Docker, see [GETTING_STARTED.md](GETTING_STARTED.md)
-
-## 📞 Support
-
-For issues or questions, please check the main [README.md](README.md) or open an issue on GitHub.
-
----
-
-**Note**: Your actual production database and data files are excluded from the Docker build. The Docker setup uses only sample data from `init_db.py`.
+## Security Note
+This setup is intended for local development and demos.

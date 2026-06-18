@@ -1,57 +1,34 @@
-# 📢 Public Docker Repository
+# Public Repository Notes
 
-This is the **public Docker version** of SOC Shift Manager, designed for easy sharing and deployment.
+This repository is the public Docker-ready version of SOC Shift Manager.
 
-## 🔒 What's Different from Development Repo
+## Included
+- Application source code
+- Docker setup for local deployment
+- Database initialization scripts
+- End-user setup documentation
 
-This repository contains:
-- ✅ Full application source code
-- ✅ Docker configuration for easy deployment
-- ✅ Sample data initialization script (`init_db.py`)
-- ✅ Complete documentation
+## Excluded
+- Production databases
+- Private credentials
+- Internal backups
+- Environment-specific private assets
 
-This repository **excludes**:
-- ❌ Production databases
-- ❌ Real shift data
-- ❌ Data backups
-- ❌ Private credentials
-- ❌ Development-specific files
-
-## 🚀 Quick Start
-
+## Quick Start
 ```bash
-git clone <your-public-repo-url>
+git clone https://github.com/Doomakos/soc-shift-manager-docker.git
 cd soc-shift-manager-docker
-./docker-start.sh
-```
-
-Or:
-```bash
 docker-compose up --build
 ```
 
-Then access:
+Then open:
 - Frontend: http://localhost:3000
-- Backend: http://localhost:5000
+- API: http://localhost:5000/api
 
-## 📊 Sample Data
+For port overrides, set BACKEND_PORT and FRONTEND_PORT in root .env.
 
-The application initializes with:
-- 12 SOC Level 1 Analysts
-- 90 days of historical shifts
-- Greek labor law pay rules
-- Complete analytics dashboard
-
-## 📖 Documentation
-
-- [README.md](README.md) - Full feature documentation
-- [DOCKER_SETUP.md](DOCKER_SETUP.md) - Detailed Docker guide
-- [QUICK_START.md](QUICK_START.md) - Quick reference
-
-## 🤝 Contributing
-
-This is a demo/starter version. For the full development repository, please contact the maintainers.
-
----
-
-**Enjoy exploring SOC Shift Manager! 🎉**
+## Documentation
+- README.md
+- DOCKER_SETUP.md
+- GETTING_STARTED.md
+- QUICK_START.md

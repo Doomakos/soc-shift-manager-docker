@@ -1,165 +1,115 @@
-# SOC Shift Manager - Backend
+# SOC Shift Manager Backend
 
-## Setup
+Backend service is a Flask API responsible for users, analysts, shifts, standby scheduling, and analytics.
 
-### Install Dependencies
+## Requirements
+- Python 3.8+
+
+## Local Setup
+
+```bash
+python -m venv venv
+```
+
+Activate environment.
+
+Windows PowerShell:
+```powershell
+venv\Scripts\Activate.ps1
+```
+
+macOS/Linux:
+```bash
+source venv/bin/activate
+```
+
+Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-### Initialize Database
+Initialize sample data:
 ```bash
-# For SQLite (default)
-python app.py
-
-# Or initialize with sample data
 python init_db.py
 ```
 
-### Run Development Server
+Run API:
 ```bash
 python app.py
 ```
 
-Server will be available at `http://localhost:5000`
+Default API base: http://localhost:5000/api
 
-## API Documentation
+## Custom Backend Port
 
-### Authentication
-Currently, the API has no authentication. For production, consider adding:
-- JWT tokens
-- API keys
-- OAuth2
-
-### Response Format
-All responses are JSON:
-
-**Success (2xx)**
-```json
-{
-  "id": 1,
-  "employee_id": "SOC001",
-  "first_name": "John",
-  "last_name": "Smith",
-  "email": "john@company.com",
-  "base_hourly_rate": 18.50,
-  "status": "active",
-  "created_at": "2024-01-01T10:00:00"
-}
+Windows PowerShell:
+```powershell
+$env:PORT=5001
+python app.py
 ```
 
-**Error (4xx/5xx)**
-```json
-{
-  "error": "Error message describing what went wrong"
-}
+macOS/Linux:
+```bash
+PORT=5001 python app.py
 ```
 
 ## Key Endpoints
 
-### System
-- `POST /api/init` - Initialize database with default pay rules
-- `GET /api/health` - Health check
+System:
+- GET /api/health
+- POST /api/init
 
-### Analysts CRUD
-- `POST /api/analysts` - Create analyst
-- `GET /api/analysts` - List all
-- `GET /api/analysts/<id>` - Get one
-- `PUT /api/analysts/<id>` - Update
-- `DELETE /api/analysts/<id>` - Delete
+Auth:
+- GET /api/auth/setup
+- POST /api/auth/setup
+- POST /api/auth/login
+- POST /api/auth/refresh
 
-### Shifts CRUD
-- `POST /api/shifts` - Create shift
-- `GET /api/shifts` - List (supports filters)
-- `GET /api/shifts/<id>` - Get one
-- `PUT /api/shifts/<id>` - Update
-- `DELETE /api/shifts/<id>` - Delete
+Analysts:
+- GET /api/analysts
+- POST /api/analysts
+- GET /api/analysts/{id}
+- PUT /api/analysts/{id}
+- DELETE /api/analysts/{id}
 
-### Analytics
-- `GET /api/analytics/analyst-summary/<id>` - Individual summary
-- `GET /api/analytics/team-summary` - Team summary
+Shifts:
+- GET /api/shifts
+- POST /api/shifts
+- GET /api/shifts/{id}
+- PUT /api/shifts/{id}
+- DELETE /api/shifts/{id}
+
+Standby:
+- GET /api/standby
+- POST /api/standby
+- PUT /api/standby/{id}
+- DELETE /api/standby/{id}
+
+Analytics:
+- GET /api/analytics/team-summary
+- GET /api/analytics/analyst-summary/{id}
 
 ## Environment Variables
 
-Create a `.env` file:
-```
+Create backend/.env as needed:
+
+```env
 DATABASE_URL=sqlite:///soc_shift_manager.db
 FLASK_ENV=development
-FLASK_DEBUG=True
+JWT_SECRET_KEY=replace-this-in-real-environments
+PORT=5000
 ```
-
-For PostgreSQL:
-```
-DATABASE_URL=postgresql://username:password@localhost:5432/soc_shift_manager
-```
-
-## Database
-
-### Default Database
-SQLite file: `soc_shift_manager.db`
-
-### Models
-1. **Analyst** - SOC Level 1 analysts
-2. **Shift** - Individual shifts with pay calculations
-3. **PayRule** - Premium pay multipliers for different days
-
-## Testing
-
-### Sample Data
-Run the initialization script to populate test data:
-```bash
-python init_db.py
-```
-
-This creates:
-- 4 sample analysts
-- 60 sample shifts
-- Default pay rules (Sunday +75%, Saturday +50%)
-
-## Deployment
-
-### Production with Gunicorn
-```bash
-pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
-```
-
-### Docker
-```dockerfile
-FROM python:3.9
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-COPY . .
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
-```
-
-## Database Migrations
-
-For managing schema changes, consider adding Alembic:
-```bash
-pip install Flask-Migrate
-```
-
-## Security Notes
-
-For production:
-1. Add user authentication
-2. Use HTTPS
-3. Implement rate limiting
-4. Add input validation
-5. Use environment variables for secrets
-6. Enable CORS only for trusted domains
 
 ## Troubleshooting
 
-**Database locked error**
-- Close all connections
-- Delete `soc_shift_manager.db` and restart
+API does not start:
+- Verify Python version
+- Verify venv is active
+- Reinstall dependencies
 
-**Port 5000 already in use**
-- Change port: `app.run(port=5001)`
+Database issues:
+- Re-run python init_db.py
+- Check file permissions in backend instance directory
 
-**CORS errors**
-- Check frontend URL in CORS configuration
-- Ensure backend is running before frontend requests
+Connection issues from frontend:
+- Confirm frontend API URL targets correct backend port

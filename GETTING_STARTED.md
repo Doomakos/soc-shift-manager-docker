@@ -1,164 +1,120 @@
-# SOC Shift Manager - Installation & Getting Started
+# SOC Shift Manager - Getting Started
+
+This guide helps new users run the app locally without Docker.
 
 ## System Requirements
+- Python 3.8+
+- Node.js 14+
+- npm
 
-- **Python 3.8+** (for backend)
-- **Node.js 14+** (for frontend)
-- **npm or yarn** (package manager)
-- 200MB disk space for dependencies
+## 1. Start the Backend
 
-## Quick Start Guide
-
-### 1. Backend Setup (Python/Flask)
-
-Navigate to backend folder:
+From project root:
 ```bash
 cd backend
+python -m venv venv
 ```
 
-Create Python virtual environment:
-```bash
-# Windows
-python -m venv venv
-venv\Scripts\activate
+Activate the virtual environment.
 
-# macOS/Linux
-python3 -m venv venv
+Windows PowerShell:
+```powershell
+venv\Scripts\Activate.ps1
+```
+
+macOS/Linux:
+```bash
 source venv/bin/activate
 ```
 
-Install dependencies:
+Install dependencies and initialize data:
 ```bash
 pip install -r requirements.txt
-```
-
-Initialize database with sample data:
-```bash
 python init_db.py
 ```
 
-Start the backend server:
+Run backend:
 ```bash
 python app.py
 ```
 
-✅ Backend running on: `http://localhost:5000`
+Backend endpoint: http://localhost:5000/api
 
-### 2. Frontend Setup (React)
+Optional custom port:
 
-In a **new terminal**, navigate to frontend folder:
-```bash
-cd frontend
+Windows PowerShell:
+```powershell
+$env:PORT=5001
+python app.py
 ```
 
-Install dependencies:
+macOS/Linux:
 ```bash
+PORT=5001 python app.py
+```
+
+## 2. Start the Frontend
+
+Open a second terminal in project root:
+```bash
+cd frontend
 npm install
 ```
 
-Start the development server:
+If backend is on default port 5000:
 ```bash
 npm start
 ```
 
-✅ Frontend running on: `http://localhost:3000`
-
-Browser will open automatically. If not, go to `http://localhost:3000`
-
-## First-Time Usage
-
-### 1. Initialize System
-When you first load the app, the backend automatically initializes the database with default pay rules.
-
-### 2. Create Analysts
-- Go to **Analysts** page
-- Click **Add Analyst**
-- Fill in:
-  - Employee ID (e.g., SOC001)
-  - First Name & Last Name
-  - Email address
-  - Base hourly rate (in €, e.g., 18.50)
-- Click **Create**
-
-### 3. Check Pay Rules
-- Go to **Pay Rules** page
-- You'll see pre-configured rules:
-  - Sunday: 1.75x (75% bonus)
-  - Saturday: 1.5x (50% bonus)
-  - Weekdays: 1.0x (regular)
-
-### 4. Assign Your First Shift
-- Go to **Shifts** page
-- Click **Assign Shift**
-- Select analyst, date, start/end times
-- Click **Create**
-- System automatically calculates:
-  - Hours worked
-  - Pay multiplier based on day
-  - Total pay (base × multiplier)
-
-### 5. View Reports
-- Go to **Analytics** page
-- Choose **Team Summary** or **Individual Analyst**
-- See total hours and earnings
-
-## Project Structure
-
+If backend is on a custom port, create frontend/.env first:
+```env
+REACT_APP_API_URL=http://localhost:5001/api
 ```
-soc-shift-manager/
-├── backend/
-│   ├── app.py                 # Main Flask application
-│   ├── init_db.py            # Database initialization script
-│   ├── requirements.txt        # Python dependencies
-│   ├── README.md             # Backend documentation
-│   └── .gitignore
-├── frontend/
-│   ├── src/
-│   │   ├── pages/            # Page components
-│   │   ├── api.js            # API client
-│   │   ├── App.jsx           # Main app
-│   │   ├── index.js          # Entry point
-│   │   └── index.css         # Styles
-│   ├── public/
-│   │   └── index.html        # HTML template
-│   ├── package.json          # NPM dependencies
-│   ├── tailwind.config.js    # Tailwind configuration
-│   ├── README.md             # Frontend documentation
-│   └── .gitignore
-├── README.md                 # This file
-└── .github/                  # GitHub files
+
+Then run:
+```bash
+npm start
+```
+
+Frontend endpoint: http://localhost:3000
+
+## 3. First-Time Setup in Browser
+- Open http://localhost:3000
+- If no admin exists, the app opens setup flow
+- Create the first administrator account
+- Sign in and start configuring users, analysts, shifts, and standby schedules
+
+## Project Layout
+
+```text
+soc-shift-manager-docker/
+  backend/
+    app.py
+    init_db.py
+    requirements.txt
+  frontend/
+    src/
+    package.json
+  docker-compose.yml
+  README.md
+  DOCKER_SETUP.md
 ```
 
 ## Common Tasks
 
-### Add a New Analyst
-Analysts page → Add Analyst button → Fill form → Create
+Start backend:
+```bash
+cd backend
+python app.py
+```
 
-### Assign a Shift
-Shifts page → Assign Shift button → Fill details → Create
+Start frontend:
+```bash
+cd frontend
+npm start
+```
 
-### Edit a Shift
-Shifts page → Click edit icon on shift card → Update → Save
-
-### View Earnings Report
-Analytics page → Select analyst or view team summary
-
-### Configure Pay Rules
-Pay Rules page → Add Pay Rule → Set multiplier for specific day
-
-## Database
-
-### Default Location
-- SQLite database: `backend/soc_shift_manager.db`
-- Auto-created on first run
-
-### Sample Data
-The `init_db.py` script creates:
-- 4 sample analysts
-- 60 sample shifts
-- Default pay rules
-
-To reload sample data:
+Reset local database:
 ```bash
 cd backend
 python init_db.py
@@ -166,57 +122,26 @@ python init_db.py
 
 ## Troubleshooting
 
-### Backend won't start
-```bash
-# Check Python version
-python --version  # Should be 3.8+
+### Backend does not start
+- Check Python version
+- Reinstall dependencies with pip install -r requirements.txt
+- Ensure virtual environment is active
 
-# Clear and reinstall dependencies
-pip install -r requirements.txt --force-reinstall
+### Frontend cannot connect
+- Ensure backend is running
+- Ensure REACT_APP_API_URL points to the active backend port
+- Restart frontend after changing frontend/.env
+
+### Port conflict
+- Backend: set PORT before python app.py
+- Frontend: set PORT before npm start
+
+Windows PowerShell example:
+```powershell
+$env:PORT=3001
+npm start
 ```
 
-### Frontend won't connect to backend
-- Ensure backend is running: `python app.py`
-- Check backend is on port 5000
-- Verify frontend `.env` has correct API URL
-
-### Port already in use
-- Backend: Change port in `app.py`: `app.run(port=5001)`
-- Frontend: Change port: `PORT=3001 npm start`
-
-### Database errors
-```bash
-# Delete database and restart (loses all data)
-cd backend
-rm soc_shift_manager.db
-python app.py
-```
-
-## Deployment
-
-### For Testing/Demo
-Current setup is ready for local testing.
-
-### For Production
-See deployment sections in:
-- `backend/README.md` - Gunicorn, Docker
-- `frontend/README.md` - Build & hosting options
-
-## Support & Next Steps
-
-1. **Read the full README** for detailed feature documentation
-2. **Check component pages** (Analytics, Shifts, etc.) for detailed guides
-3. **Explore the API** at `http://localhost:5000/api` endpoints
-
-## Key Features Summary
-
-✅ **Manage Analysts** - Register SOC Level 1 analysts with base rates
-✅ **Assign Shifts** - Create shifts with automatic time tracking
-✅ **Premium Pay** - Automatic 75% bonus on Sundays, 50% on Saturdays
-✅ **Historical Data** - Complete shift history and records
-✅ **Analytics** - Detailed reports on hours and earnings
-✅ **Custom Rules** - Configure pay multipliers for any day
-
----
-
-**Happy Shift Managing! 🔐**
+## Next Steps
+- For Docker setup, see DOCKER_SETUP.md
+- For quick command reference, see QUICK_START.md
