@@ -1,10 +1,25 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Layout, BarChart3, Settings, Calendar, Clock, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { settingsAPI } from '../api';
 
 export default function Home() {
     const { hasRole } = useAuth();
+    const [payrollEnabled, setPayrollEnabled] = useState(false);
+
+    useEffect(() => {
+        const loadSettings = async () => {
+            try {
+                const response = await settingsAPI.get();
+                setPayrollEnabled(!!response.data?.payroll_enabled);
+            } catch (error) {
+                setPayrollEnabled(false);
+            }
+        };
+
+        loadSettings();
+    }, []);
 
     const canManage = hasRole('admin', 'soc_manager', 'shift_coordinator');
     const canViewPayRules = hasRole('admin', 'soc_manager');
@@ -50,7 +65,7 @@ export default function Home() {
             description: isAnalyst ? 'View your shift statistics and hours' : 'Team analytics with multiplier breakdowns',
             link: '/analytics',
             color: 'bg-purple-500',
-            show: true, // All users
+            show: payrollEnabled,
         },
         {
             icon: Settings,

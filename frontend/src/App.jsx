@@ -15,16 +15,34 @@ import PayRulesManagement from './pages/PayRulesManagement';
 import StandbyManagement from './pages/StandbyManagement';
 import UserManagement from './pages/UserManagement';
 import Profile from './pages/Profile';
-import { buildApiUrl, systemAPI } from './api';
+import { buildApiUrl, settingsAPI, systemAPI } from './api';
 import axios from 'axios';
 
 // Navigation component with role-aware UI
 function Navigation() {
     const { isAuthenticated, user, logout, hasRole } = useAuth();
+    const [payrollEnabled, setPayrollEnabled] = useState(false);
+
+    useEffect(() => {
+        const loadSettings = async () => {
+            if (!isAuthenticated) {
+                setPayrollEnabled(false);
+                return;
+            }
+            try {
+                const response = await settingsAPI.get();
+                setPayrollEnabled(!!response.data?.payroll_enabled);
+            } catch (error) {
+                setPayrollEnabled(false);
+            }
+        };
+
+        loadSettings();
+    }, [isAuthenticated]);
 
     // Define role-based visibility
     const canManage = hasRole('admin', 'soc_manager', 'shift_coordinator');
-    const canViewAnalytics = hasRole('admin', 'soc_manager', 'shift_coordinator', 'hr_payroll');
+    const canViewAnalytics = payrollEnabled;
     const canViewPayRules = hasRole('admin', 'soc_manager');
     const canViewAdvanced = hasRole('admin', 'soc_manager', 'shift_coordinator');
 
@@ -66,15 +84,10 @@ function Navigation() {
                                 </Link>
                             )}
 
-                            {/* Analytics - All authenticated users (own data for analysts) */}
-                            <Link to="/analytics" className="hover:text-blue-100 transition-colors">
-                                Analytics
-                            </Link>
-
-                            {/* Settings - Admin + SOC Manager only */}
-                            {canViewPayRules && (
-                                <Link to="/settings" className="hover:text-blue-100 transition-colors">
-                                    ⚙️ Settings
+                            {/* Analytics visible only when payroll is enabled */}
+                            {canViewAnalytics && (
+                                <Link to="/analytics" className="hover:text-blue-100 transition-colors">
+                                    Analytics
                                 </Link>
                             )}
 
@@ -94,6 +107,16 @@ function Navigation() {
                         </div>
 
                         <div className="flex items-center gap-4">
+                            {canViewPayRules && (
+                                <Link
+                                    to="/settings"
+                                    title="Settings"
+                                    aria-label="Settings"
+                                    className="h-9 w-9 rounded-full border border-white/40 hover:bg-white/20 flex items-center justify-center transition-colors"
+                                >
+                                    ⚙️
+                                </Link>
+                            )}
                             <Link to="/profile" className="text-sm hover:text-blue-100 transition-colors">
                                 👤 {user?.username} ({user?.role})
                             </Link>

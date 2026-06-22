@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { payRuleAPI, settingsAPI } from '../api';
 import { Plus, Trash2, Loader, Settings, Power } from 'lucide-react';
 
-const DAY_NAMES = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
+const RULE_TYPE_OPTIONS = [
+    { value: 'normal', label: 'Normal Daytime' },
+    { value: 'night', label: 'Night' },
+    { value: 'sunday_day', label: 'Sunday Daytime' },
+    { value: 'sunday_night', label: 'Sunday Night' },
+    { value: 'holiday_day', label: 'Holiday Daytime' },
+    { value: 'holiday_night', label: 'Holiday Night' },
+    { value: 'sixth_day', label: 'Sixth Day' },
+    { value: 'sixth_night', label: 'Sixth Night' },
 ];
 
 export default function PayRulesManagement() {
@@ -21,7 +22,7 @@ export default function PayRulesManagement() {
     const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState({
         rule_name: '',
-        day_of_week: '',
+        rule_type: 'normal',
         multiplier: 1.0,
         description: '',
     });
@@ -78,20 +79,19 @@ export default function PayRulesManagement() {
         try {
             const data = {
                 ...formData,
-                day_of_week:
-                    formData.day_of_week === '' ? null : parseInt(formData.day_of_week),
+                multiplier: Number(formData.multiplier),
             };
             await payRuleAPI.create(data);
             fetchRules();
             setShowForm(false);
             setFormData({
                 rule_name: '',
-                day_of_week: '',
+                rule_type: 'normal',
                 multiplier: 1.0,
                 description: '',
             });
         } catch (err) {
-            setError('Failed to create pay rule');
+            setError(err.response?.data?.error || 'Failed to create pay rule');
             console.error(err);
         }
     };
@@ -175,16 +175,16 @@ export default function PayRulesManagement() {
                             required
                         />
                         <select
-                            value={formData.day_of_week}
+                            value={formData.rule_type}
                             onChange={(e) =>
-                                setFormData({ ...formData, day_of_week: e.target.value })
+                                setFormData({ ...formData, rule_type: e.target.value })
                             }
                             className="border rounded px-3 py-2"
+                            required
                         >
-                            <option value="">All Days (Default)</option>
-                            {DAY_NAMES.map((day, idx) => (
-                                <option key={idx} value={idx}>
-                                    {day}
+                            {RULE_TYPE_OPTIONS.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                    {opt.label}
                                 </option>
                             ))}
                         </select>
@@ -250,9 +250,7 @@ export default function PayRulesManagement() {
                                 <div className="flex-1">
                                     <h3 className="text-lg font-semibold">{rule.rule_name}</h3>
                                     <p className="text-gray-600 text-sm">
-                                        {rule.day_of_week !== null
-                                            ? `Applies on: ${DAY_NAMES[rule.day_of_week]}`
-                                            : 'Applies on: All Days (Default)'}
+                                        Rule type: {rule.rule_type || 'normal'}
                                     </p>
                                     <p className="text-gray-700 font-semibold mt-2">
                                         Multiplier: {rule.multiplier}x

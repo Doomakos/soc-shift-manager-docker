@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api, { analystAPI } from '../api';
-import { Loader, UserPlus, CheckCircle, XCircle, Edit2, Trash2, Shield, User, Key } from 'lucide-react';
+import { Loader, UserPlus, CheckCircle, Edit2, Trash2, Shield, User, Key } from 'lucide-react';
 
 export default function UserManagement() {
     const [users, setUsers] = useState([]);
@@ -443,8 +443,8 @@ export default function UserManagement() {
                                         ))}
                                     </select>
                                 </div>
-                                <div>
-                                    <label className="inline-flex items-center gap-2 text-sm font-semibold mb-1">
+                                <div className="border border-indigo-200 bg-indigo-50 rounded p-3">
+                                    <label className="inline-flex items-center gap-3 text-sm font-semibold">
                                         <input
                                             type="checkbox"
                                             checked={!!formData.create_analyst}
@@ -454,10 +454,13 @@ export default function UserManagement() {
                                                 analyst_level: e.target.checked && formData.role === 'l2_analyst' ? 'L2' : formData.analyst_level,
                                                 analyst_id: e.target.checked ? '' : formData.analyst_id,
                                             })}
-                                            className="rounded"
+                                            className="h-4 w-4 rounded"
                                         />
-                                        Create Analyst?
+                                        Create and link a new analyst profile
                                     </label>
+                                    <p className="text-xs text-indigo-700 mt-2">
+                                        Enable this to show analyst fields (first name, last name, level, and daily hours).
+                                    </p>
                                 </div>
 
                                 {formData.create_analyst ? (

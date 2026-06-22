@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { analyticsAPI, analystAPI } from '../api';
+import React, { useState, useEffect, useCallback } from 'react';
+import { analyticsAPI, analystAPI, settingsAPI } from '../api';
 import { Loader, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import DatePicker from 'react-datepicker';
@@ -16,22 +16,6 @@ export default function Analytics() {
         if (!isoDate) return '';
         const [year, month, day] = isoDate.split('-');
         return `${day}/${month}/${year}`;
-    };
-    const formatDateFromGreece = (greeceDate) => {
-        if (!greeceDate) return '';
-        const [day, month, year] = greeceDate.split('/');
-        return `${year}-${month}-${day}`;
-    };
-    const isValidDate = (dateStr) => {
-        if (!dateStr || dateStr.length !== 10) return false;
-        const [day, month, year] = dateStr.split('/');
-        if (!day || !month || !year) return false;
-        const d = parseInt(day);
-        const m = parseInt(month);
-        const y = parseInt(year);
-        if (d < 1 || d > 31 || m < 1 || m > 12 || y < 2000 || y > 2100) return false;
-        const date = new Date(y, m - 1, d);
-        return date.getDate() === d && date.getMonth() === m - 1 && date.getFullYear() === y;
     };
 
     // Get current month's date range
@@ -61,14 +45,23 @@ export default function Analytics() {
     const [allAnalystsData, setAllAnalystsData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('team');
+    const [payrollEnabled, setPayrollEnabled] = useState(false);
 
-    useEffect(() => {
-        fetchInitialData();
-    }, []);
-
-    const fetchInitialData = async () => {
+    const fetchInitialData = useCallback(async () => {
         try {
             setLoading(true);
+            const settingsResponse = await settingsAPI.get();
+            const isPayrollEnabled = !!settingsResponse.data?.payroll_enabled;
+            setPayrollEnabled(isPayrollEnabled);
+
+            if (!isPayrollEnabled) {
+                setAnalysts([]);
+                setAnalyticsData(null);
+                setTeamData(null);
+                setAllAnalystsData([]);
+                return;
+            }
+
             const response = await analystAPI.getAll();
             setAnalysts(response.data);
 
@@ -98,7 +91,11 @@ export default function Analytics() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [isAnalyst, canViewAll, user.analyst_id, monthRange.start, monthRange.end]);
+
+    useEffect(() => {
+        fetchInitialData();
+    }, [fetchInitialData]);
 
     const handleAnalystQuery = async (analystId = null) => {
         const idToUse = analystId || selectedAnalystId;
@@ -168,6 +165,19 @@ export default function Analytics() {
         return (
             <div className="flex justify-center items-center h-96">
                 <Loader className="animate-spin text-blue-500" size={32} />
+            </div>
+        );
+    }
+
+    if (!payrollEnabled) {
+        return (
+            <div className="container mx-auto p-6">
+                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-gray-400">
+                    <h1 className="text-2xl font-bold mb-2">Analytics Unavailable</h1>
+                    <p className="text-gray-700">
+                        Payroll is disabled, so analytics are hidden. Enable payroll from Settings to access analytics again.
+                    </p>
+                </div>
             </div>
         );
     }

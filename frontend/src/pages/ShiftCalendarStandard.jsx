@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     ChevronLeft,
     ChevronRight,
@@ -12,7 +12,7 @@ import { format, startOfMonth, addMonths, subMonths } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
 
 export default function ShiftCalendarStandard() {
-    const { user, hasRole } = useAuth();
+    const { hasRole } = useAuth();
     const canEdit = hasRole('admin', 'soc_manager', 'shift_coordinator');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [analysts, setAnalysts] = useState([]);
@@ -84,11 +84,7 @@ export default function ShiftCalendarStandard() {
         });
     };
 
-    useEffect(() => {
-        fetchData();
-    }, [currentDate]);
-
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             setLoading(true);
             const [analystsRes, templatesRes] = await Promise.all([
@@ -127,7 +123,11 @@ export default function ShiftCalendarStandard() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [currentDate]);
+
+    useEffect(() => {
+        fetchData();
+    }, [currentDate, canEdit, fetchData]);
 
     const getDaysInCurrentMonth = () => {
         const days = [];

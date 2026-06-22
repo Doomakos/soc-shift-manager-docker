@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import api, { analystAPI } from '../api';
@@ -19,6 +19,15 @@ export default function Profile() {
     const [errors, setErrors] = useState({});
     const [success, setSuccess] = useState('');
 
+    const fetchLinkedAnalyst = useCallback(async () => {
+        try {
+            const response = await analystAPI.getById(user.analyst_id);
+            setLinkedAnalyst(response.data);
+        } catch (err) {
+            console.error('Error fetching linked analyst:', err);
+        }
+    }, [user.analyst_id]);
+
     useEffect(() => {
         if (user?.analyst_id) {
             fetchLinkedAnalyst();
@@ -29,16 +38,7 @@ export default function Profile() {
             setForcePasswordChange(true);
             setShowPasswordForm(true);
         }
-    }, [user, location]);
-
-    const fetchLinkedAnalyst = async () => {
-        try {
-            const response = await analystAPI.getById(user.analyst_id);
-            setLinkedAnalyst(response.data);
-        } catch (err) {
-            console.error('Error fetching linked analyst:', err);
-        }
-    };
+    }, [user, location, fetchLinkedAnalyst]);
 
     const getRoleLabel = (role) => {
         const roleMap = {

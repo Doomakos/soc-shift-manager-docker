@@ -317,7 +317,7 @@ def role_required(*allowed_roles):
 # ==================== HELPER FUNCTIONS ====================
 
 SETTINGS_DEFAULTS = {
-    "payroll_enabled": "true",
+    "payroll_enabled": "false",
 }
 
 
@@ -379,7 +379,7 @@ def sort_analysts_by_level_and_name(analysts):
 
 def get_pay_multipliers():
     """Get pay multipliers from database or return defaults"""
-    if not get_setting_bool("payroll_enabled", True):
+    if not get_setting_bool("payroll_enabled", False):
         return {
             'normal': 1.00,
             'night': 1.00,
@@ -1538,7 +1538,25 @@ def get_pay_rules():
 @app.route("/api/pay-rules", methods=["POST"])
 def create_pay_rule():
     """Create a new pay rule"""
-    data = request.json
+    data = request.json or {}
+
+    allowed_rule_types = {
+        "normal",
+        "night",
+        "sunday_day",
+        "sunday_night",
+        "holiday_day",
+        "holiday_night",
+        "sixth_day",
+        "sixth_night",
+    }
+
+    if not data.get("rule_name"):
+        return jsonify({"error": "rule_name is required"}), 400
+    if data.get("rule_type") not in allowed_rule_types:
+        return jsonify({"error": "rule_type is required and must be valid"}), 400
+    if data.get("multiplier") is None:
+        return jsonify({"error": "multiplier is required"}), 400
 
     try:
         rule = PayRule(
@@ -2022,7 +2040,7 @@ def get_settings():
     ensure_default_settings()
     db.session.commit()
     return jsonify({
-        "payroll_enabled": get_setting_bool("payroll_enabled", True)
+        "payroll_enabled": get_setting_bool("payroll_enabled", False)
     }), 200
 
 
@@ -2041,7 +2059,7 @@ def update_settings():
         db.session.commit()
         return jsonify({
             "message": "Settings updated successfully",
-            "payroll_enabled": get_setting_bool("payroll_enabled", True),
+            "payroll_enabled": get_setting_bool("payroll_enabled", False),
         }), 200
     except Exception as e:
         db.session.rollback()

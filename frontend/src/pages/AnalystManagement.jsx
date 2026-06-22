@@ -122,71 +122,89 @@ export default function AnalystManagement() {
                         {editingId ? 'Edit Analyst' : 'Add New Analyst'}
                     </h2>
                     <div className="grid grid-cols-2 gap-4">
-                        <input
-                            type="text"
-                            placeholder="Employee ID (optional, auto-generated if empty)"
-                            value={formData.employee_id}
-                            onChange={(e) =>
-                                setFormData({ ...formData, employee_id: e.target.value })
-                            }
-                            className="border rounded px-3 py-2"
-                        />
-                        <input
-                            type="text"
-                            placeholder="First Name"
-                            value={formData.first_name}
-                            onChange={(e) =>
-                                setFormData({ ...formData, first_name: e.target.value })
-                            }
-                            className="border rounded px-3 py-2"
-                            required
-                        />
-                        <input
-                            type="text"
-                            placeholder="Last Name"
-                            value={formData.last_name}
-                            onChange={(e) =>
-                                setFormData({ ...formData, last_name: e.target.value })
-                            }
-                            className="border rounded px-3 py-2"
-                            required
-                        />
-                        <input
-                            type="email"
-                            placeholder="Email"
-                            value={formData.email}
-                            onChange={(e) =>
-                                setFormData({ ...formData, email: e.target.value })
-                            }
-                            className="border rounded px-3 py-2"
-                            required
-                        />
-                        <input
-                            type="number"
-                            placeholder="Daily Hours"
-                            value={formData.daily_hours}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    daily_hours: parseFloat(e.target.value),
-                                })
-                            }
-                            className="border rounded px-3 py-2"
-                            required
-                            step="0.5"
-                            min="1"
-                        />
-                        <select
-                            value={formData.analyst_level}
-                            onChange={(e) =>
-                                setFormData({ ...formData, analyst_level: e.target.value })
-                            }
-                            className="border rounded px-3 py-2"
-                            required
-                        >
-                            <option value="L1">Level 1 (Shift Work)</option>
-                            <option value="L2">Level 2 (Standby)</option>
-                        </select>
+                        <div>
+                            <label className="block text-sm font-semibold mb-1">Employee ID</label>
+                            <input
+                                type="text"
+                                placeholder="Optional, auto-generated if empty"
+                                value={formData.employee_id}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, employee_id: e.target.value })
+                                }
+                                className="border rounded px-3 py-2 w-full"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold mb-1">First Name</label>
+                            <input
+                                type="text"
+                                placeholder="First Name"
+                                value={formData.first_name}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, first_name: e.target.value })
+                                }
+                                className="border rounded px-3 py-2 w-full"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold mb-1">Last Name</label>
+                            <input
+                                type="text"
+                                placeholder="Last Name"
+                                value={formData.last_name}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, last_name: e.target.value })
+                                }
+                                className="border rounded px-3 py-2 w-full"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold mb-1">Email</label>
+                            <input
+                                type="email"
+                                placeholder="Email"
+                                value={formData.email}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, email: e.target.value })
+                                }
+                                className="border rounded px-3 py-2 w-full"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold mb-1">Daily Hours</label>
+                            <input
+                                type="number"
+                                placeholder="Daily Hours"
+                                value={formData.daily_hours}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        daily_hours: parseFloat(e.target.value),
+                                    })
+                                }
+                                className="border rounded px-3 py-2 w-full"
+                                required
+                                step="0.5"
+                                min="1"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold mb-1">Analyst Level</label>
+                            <select
+                                value={formData.analyst_level}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, analyst_level: e.target.value })
+                                }
+                                className="border rounded px-3 py-2 w-full"
+                                required
+                            >
+                                <option value="L1">Level 1 (Shift Work)</option>
+                                <option value="L2">Level 2 (Standby)</option>
+                            </select>
+                        </div>
                     </div>
                     <div className="flex gap-2 mt-4">
                         <button
