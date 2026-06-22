@@ -71,10 +71,10 @@ function Navigation() {
                                 Analytics
                             </Link>
 
-                            {/* Pay Rules - Admin + SOC Manager only */}
+                            {/* Settings - Admin + SOC Manager only */}
                             {canViewPayRules && (
-                                <Link to="/pay-rules" className="hover:text-blue-100 transition-colors">
-                                    Pay Rules
+                                <Link to="/settings" className="hover:text-blue-100 transition-colors">
+                                    ⚙️ Settings
                                 </Link>
                             )}
 
@@ -229,12 +229,16 @@ function App() {
                             }
                         />
                         <Route
-                            path="/pay-rules"
+                            path="/settings"
                             element={
                                 <ProtectedRoute roles={['admin', 'soc_manager']}>
                                     <PayRulesManagement />
                                 </ProtectedRoute>
                             }
+                        />
+                        <Route
+                            path="/pay-rules"
+                            element={<Navigate to="/settings" replace />}
                         />
                         <Route
                             path="/standby"

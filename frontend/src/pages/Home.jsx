@@ -54,9 +54,9 @@ export default function Home() {
         },
         {
             icon: Settings,
-            title: 'Pay Rules',
-            description: 'Configure premium pay multipliers',
-            link: '/pay-rules',
+            title: 'App Settings',
+            description: 'Enable payroll and manage pay-rule multipliers',
+            link: '/settings',
             color: 'bg-orange-500',
             show: canViewPayRules,
         },
@@ -88,7 +88,7 @@ export default function Home() {
                 <p className="text-gray-600 mt-4">
                     {isAnalyst
                         ? 'Welcome! Use the modules below to view your shift calendar and track your work hours.'
-                        : 'Welcome to the internal shift management platform for SOC Level 1 analysts. Use the modules below to manage shifts, view analytics, and configure pay rules.'
+                        : 'Welcome to the internal shift management platform for SOC Level 1 analysts. Use the modules below to manage shifts, view analytics, and configure app settings.'
                     }
                 </p>
             </div>

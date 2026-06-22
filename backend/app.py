@@ -190,6 +190,21 @@ class PayRule(db.Model):
         }
 
 
+class AppSetting(db.Model):
+    __tablename__ = "app_settings"
+
+    key = db.Column(db.String(100), primary_key=True)
+    value = db.Column(db.String(255), nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "key": self.key,
+            "value": self.value,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
 class StandbyWeek(db.Model):
     __tablename__ = "standby_weeks"
 
@@ -301,8 +316,81 @@ def role_required(*allowed_roles):
 
 # ==================== HELPER FUNCTIONS ====================
 
+SETTINGS_DEFAULTS = {
+    "payroll_enabled": "true",
+}
+
+
+def ensure_default_settings():
+    for key, value in SETTINGS_DEFAULTS.items():
+        if not AppSetting.query.filter_by(key=key).first():
+            db.session.add(AppSetting(key=key, value=value))
+
+
+def get_setting(key, default=None):
+    setting = AppSetting.query.filter_by(key=key).first()
+    if setting:
+        return setting.value
+    return default
+
+
+def get_setting_bool(key, default=False):
+    value = get_setting(key, "true" if default else "false")
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def set_setting_value(key, value):
+    setting = AppSetting.query.filter_by(key=key).first()
+    if setting:
+        setting.value = value
+    else:
+        db.session.add(AppSetting(key=key, value=value))
+
+
+def generate_employee_id(prefix="SOC"):
+    max_suffix = 0
+    prefix_pattern = re.compile(rf"^{re.escape(prefix)}(\d+)$")
+
+    for analyst in Analyst.query.filter(Analyst.employee_id.like(f"{prefix}%")).all():
+        match = prefix_pattern.match(analyst.employee_id)
+        if match:
+            max_suffix = max(max_suffix, int(match.group(1)))
+
+    next_suffix = max_suffix + 1
+    candidate = f"{prefix}{next_suffix:03d}"
+    while Analyst.query.filter_by(employee_id=candidate).first():
+        next_suffix += 1
+        candidate = f"{prefix}{next_suffix:03d}"
+
+    return candidate
+
+
+def sort_analysts_by_level_and_name(analysts):
+    level_order = {"L1": 0, "L2": 1}
+    return sorted(
+        analysts,
+        key=lambda analyst: (
+            level_order.get((analyst.analyst_level or "").upper(), 99),
+            (analyst.last_name or "").lower(),
+            (analyst.first_name or "").lower(),
+            analyst.id,
+        ),
+    )
+
 def get_pay_multipliers():
     """Get pay multipliers from database or return defaults"""
+    if not get_setting_bool("payroll_enabled", True):
+        return {
+            'normal': 1.00,
+            'night': 1.00,
+            'sunday_day': 1.00,
+            'sunday_night': 1.00,
+            'holiday_day': 1.00,
+            'holiday_night': 1.00,
+            'sixth_day': 1.00,
+            'sixth_night': 1.00,
+        }
+
     multipliers = {}
     rules = PayRule.query.filter_by(active=True).all()
     
@@ -340,10 +428,8 @@ def validate_analyst_data(data, is_update=False):
     """Validate analyst data"""
     errors = []
     
-    if not is_update or 'employee_id' in data:
-        if not data.get('employee_id'):
-            errors.append("Employee ID is required")
-        elif len(data['employee_id']) > 50:
+    if 'employee_id' in data and data.get('employee_id'):
+        if len(data['employee_id']) > 50:
             errors.append("Employee ID too long (max 50 chars)")
     
     if not is_update or 'first_name' in data:
@@ -363,12 +449,6 @@ def validate_analyst_data(data, is_update=False):
             errors.append("Email is required")
         elif not validate_email(data['email']):
             errors.append("Invalid email format")
-    
-    if not is_update or 'base_hourly_rate' in data:
-        if data.get('base_hourly_rate') is None:
-            errors.append("Base hourly rate is required")
-        elif data['base_hourly_rate'] <= 0:
-            errors.append("Base hourly rate must be positive")
     
     return errors
 
@@ -630,8 +710,6 @@ def calculate_shift_pay(analyst_id, shift_date, start_time, end_time, shift_type
     if not analyst:
         raise ValueError(f"Analyst {analyst_id} not found")
     
-    hourly_rate = analyst.base_hourly_rate
-    
     # Skip calculation for non-work shifts
     if shift_type in ['day_off', 'approved_leave']:
         return {
@@ -660,9 +738,9 @@ def calculate_shift_pay(analyst_id, shift_date, start_time, end_time, shift_type
     # Get multipliers
     multipliers = get_pay_multipliers()
     
-    # Calculate pay hour by hour
-    total_pay = 0
+    # Calculate multiplier breakdown hour by hour
     total_hours = 0
+    weighted_multiplier_sum = 0
     breakdown_details = []
     current_dt = start_dt
     
@@ -674,28 +752,25 @@ def calculate_shift_pay(analyst_id, shift_date, start_time, end_time, shift_type
         # Get multiplier for this hour
         multiplier, rule_type = get_hour_multiplier(current_dt, analyst_id, multipliers)
         
-        # Calculate pay for this segment
-        segment_pay = segment_hours * hourly_rate * multiplier
-        
-        total_pay += segment_pay
         total_hours += segment_hours
+        weighted_multiplier_sum += segment_hours * multiplier
         
         breakdown_details.append({
             'datetime': current_dt.isoformat(),
             'hours': round(segment_hours, 2),
             'multiplier': multiplier,
             'rule_type': rule_type,
-            'pay': round(segment_pay, 2)
+            'pay': 0,
         })
         
         current_dt = next_dt
     
-    avg_multiplier = (total_pay / (total_hours * hourly_rate)) if total_hours > 0 else 1.0
+    avg_multiplier = (weighted_multiplier_sum / total_hours) if total_hours > 0 else 1.0
     
     return {
         'total_hours': round(total_hours, 2),
-        'total_pay': round(total_pay, 2),
-        'base_pay': round(total_hours * hourly_rate, 2),
+        'total_pay': 0,
+        'base_pay': 0,
         'avg_multiplier': round(avg_multiplier, 3),
         'breakdown': breakdown_details
     }
@@ -924,26 +999,60 @@ def create_user():
     if User.query.filter_by(email=data["email"]).first():
         return jsonify({"error": "Email already exists"}), 400
     
+    create_analyst = bool(data.get("create_analyst"))
+
     # Check if analyst_id is already assigned to another user
     if data.get("analyst_id"):
         existing_user = User.query.filter_by(analyst_id=data["analyst_id"]).first()
         if existing_user:
             return jsonify({"error": f"This analyst is already assigned to user '{existing_user.username}'"}), 400
+
+    if create_analyst and data.get("analyst_id"):
+        return jsonify({"error": "Cannot link an existing analyst and create a new analyst in the same request"}), 400
+
+    if create_analyst:
+        if not data.get("first_name") or not data.get("last_name"):
+            return jsonify({"error": "First name and last name are required when creating an analyst"}), 400
+
+        existing_analyst_email = Analyst.query.filter_by(email=data["email"]).first()
+        if existing_analyst_email:
+            return jsonify({"error": "An analyst with this email already exists"}), 400
     
-    # Create user
-    user = User(
-        username=data["username"],
-        email=data["email"],
-        role=data["role"],
-        analyst_id=data.get("analyst_id"),
-        status="active",  # Admin-created users are auto-approved
-        force_password_change=True,  # Force password change on first login
-        approved_by=current_user.id,
-        approved_at=datetime.utcnow()
-    )
-    user.set_password(data["password"])
+    user_analyst_id = data.get("analyst_id")
     
     try:
+        if create_analyst:
+            default_level = "L2" if data.get("role") == "l2_analyst" else "L1"
+            analyst = Analyst(
+                employee_id=generate_employee_id(),
+                first_name=data["first_name"].strip(),
+                last_name=data["last_name"].strip(),
+                email=data["email"].strip(),
+                base_hourly_rate=1.0,
+                monthly_salary=None,
+                daily_hours=float(data.get("daily_hours", 8.0) or 8.0),
+                analyst_level=data.get("analyst_level", default_level),
+                status="active",
+                created_by=current_user.id,
+                modified_by=current_user.id,
+            )
+            db.session.add(analyst)
+            db.session.flush()
+            user_analyst_id = analyst.id
+
+        # Create user
+        user = User(
+            username=data["username"],
+            email=data["email"],
+            role=data["role"],
+            analyst_id=user_analyst_id,
+            status="active",  # Admin-created users are auto-approved
+            force_password_change=True,  # Force password change on first login
+            approved_by=current_user.id,
+            approved_at=datetime.utcnow()
+        )
+        user.set_password(data["password"])
+
         db.session.add(user)
         db.session.commit()
         return jsonify({
@@ -1089,7 +1198,7 @@ def admin_reset_password(user_id):
 @app.route("/api/analysts", methods=["GET"])
 def get_analysts():
     """Get all analysts"""
-    analysts = Analyst.query.all()
+    analysts = sort_analysts_by_level_and_name(Analyst.query.all())
     return jsonify([a.to_dict() for a in analysts]), 200
 
 
@@ -1104,38 +1213,28 @@ def create_analyst():
         return jsonify({"error": "Validation failed", "details": errors}), 400
 
     try:
-        # Check for duplicate employee_id
-        existing = Analyst.query.filter_by(employee_id=data["employee_id"]).first()
-        if existing:
-            return jsonify({"error": "Employee ID already exists"}), 400
+        employee_id = (data.get("employee_id") or "").strip()
+        if employee_id:
+            existing = Analyst.query.filter_by(employee_id=employee_id).first()
+            if existing:
+                return jsonify({"error": "Employee ID already exists"}), 400
+        else:
+            employee_id = generate_employee_id()
         
         # Check for duplicate email
         existing_email = Analyst.query.filter_by(email=data["email"]).first()
         if existing_email:
             return jsonify({"error": "Email already exists"}), 400
 
-        daily_hours = data.get("daily_hours", 8.0)
-        
-        # Bidirectional calculation: monthly_salary <-> hourly_rate
-        if "monthly_salary" in data and data["monthly_salary"]:
-            # Calculate hourly rate from monthly salary
-            # Formula: hourly_rate = (monthly_salary / 25) / daily_hours
-            monthly_salary = float(data["monthly_salary"])
-            base_hourly_rate = (monthly_salary / 25) / daily_hours
-        elif "base_hourly_rate" in data:
-            # Calculate monthly salary from hourly rate
-            base_hourly_rate = float(data["base_hourly_rate"])
-            monthly_salary = (base_hourly_rate * daily_hours) * 25
-        else:
-            return jsonify({"error": "Either monthly_salary or base_hourly_rate must be provided"}), 400
+        daily_hours = float(data.get("daily_hours", 8.0) or 8.0)
         
         analyst = Analyst(
-            employee_id=data["employee_id"],
+            employee_id=employee_id,
             first_name=data["first_name"],
             last_name=data["last_name"],
             email=data["email"],
-            base_hourly_rate=base_hourly_rate,
-            monthly_salary=monthly_salary,
+            base_hourly_rate=1.0,
+            monthly_salary=None,
             daily_hours=daily_hours,
             analyst_level=data.get("analyst_level", "L1"),
             # created_by will be set once auth is implemented
@@ -1167,6 +1266,17 @@ def update_analyst(analyst_id):
         return jsonify({"error": "Validation failed", "details": errors}), 400
 
     try:
+        if 'employee_id' in data:
+            new_employee_id = (data.get('employee_id') or '').strip()
+            if not new_employee_id:
+                return jsonify({"error": "Employee ID cannot be empty"}), 400
+
+            existing_employee_id = Analyst.query.filter_by(employee_id=new_employee_id).first()
+            if existing_employee_id and existing_employee_id.id != analyst.id:
+                return jsonify({"error": "Employee ID already exists"}), 400
+
+            analyst.employee_id = new_employee_id
+
         # Check for duplicate email if email is being changed
         if 'email' in data and data['email'] != analyst.email:
             existing_email = Analyst.query.filter_by(email=data["email"]).first()
@@ -1182,13 +1292,9 @@ def update_analyst(analyst_id):
         if 'email' in data:
             analyst.email = data['email']
         
-        # Bidirectional calculation
-        if "monthly_salary" in data and data["monthly_salary"]:
-            analyst.monthly_salary = float(data["monthly_salary"])
-            analyst.base_hourly_rate = (analyst.monthly_salary / 25) / analyst.daily_hours
-        elif "base_hourly_rate" in data:
-            analyst.base_hourly_rate = float(data["base_hourly_rate"])
-            analyst.monthly_salary = (analyst.base_hourly_rate * analyst.daily_hours) * 25
+        # Keep monetary fields neutralized. Payroll rates are not managed per analyst.
+        analyst.base_hourly_rate = 1.0
+        analyst.monthly_salary = None
 
         # modified_by will be set once auth is implemented
         db.session.commit()
@@ -1901,8 +2007,44 @@ def initialize_database():
     """Create database tables on first load."""
     try:
         db.create_all()
+        ensure_default_settings()
+        db.session.commit()
         return jsonify({"message": "Database ready"}), 200
     except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+
+@app.route("/api/settings", methods=["GET"])
+@jwt_required()
+def get_settings():
+    """Get application-level settings."""
+    ensure_default_settings()
+    db.session.commit()
+    return jsonify({
+        "payroll_enabled": get_setting_bool("payroll_enabled", True)
+    }), 200
+
+
+@app.route("/api/settings", methods=["PUT"])
+@role_required("admin", "soc_manager")
+def update_settings():
+    """Update application-level settings."""
+    data = request.get_json() or {}
+
+    if "payroll_enabled" not in data:
+        return jsonify({"error": "No supported settings provided"}), 400
+
+    set_setting_value("payroll_enabled", "true" if bool(data["payroll_enabled"]) else "false")
+
+    try:
+        db.session.commit()
+        return jsonify({
+            "message": "Settings updated successfully",
+            "payroll_enabled": get_setting_bool("payroll_enabled", True),
+        }), 200
+    except Exception as e:
+        db.session.rollback()
         return jsonify({"error": str(e)}), 400
 
 
@@ -2045,7 +2187,9 @@ def delete_standby_week(standby_id):
 @app.route("/api/analysts/l2", methods=["GET"])
 def get_l2_analysts():
     """Get all L2 analysts"""
-    l2_analysts = Analyst.query.filter_by(analyst_level="L2", status="active").all()
+    l2_analysts = sort_analysts_by_level_and_name(
+        Analyst.query.filter_by(analyst_level="L2", status="active").all()
+    )
     return jsonify([a.to_dict() for a in l2_analysts]), 200
 
 

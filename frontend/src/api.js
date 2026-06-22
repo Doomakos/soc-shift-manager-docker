@@ -90,11 +90,18 @@ export const shiftAPI = {
     update: (id, data) => api.put(`/shifts/${id}`, data),
     delete: (id) => api.delete(`/shifts/${id}`),
     getTemplates: () => api.get('/shift-templates'),
-};// Pay Rules API
+};
+
+// Pay Rules API
 export const payRuleAPI = {
     getAll: () => api.get('/pay-rules'),
     create: (data) => api.post('/pay-rules', data),
     update: (id, data) => api.put(`/pay-rules/${id}`, data),
+};
+
+export const settingsAPI = {
+    get: () => api.get('/settings'),
+    update: (data) => api.put('/settings', data),
 };
 
 // Analytics API

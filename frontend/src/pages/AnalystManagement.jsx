@@ -13,7 +13,7 @@ export default function AnalystManagement() {
         first_name: '',
         last_name: '',
         email: '',
-        base_hourly_rate: '',
+        daily_hours: 8,
         analyst_level: 'L1',
     });
 
@@ -51,7 +51,7 @@ export default function AnalystManagement() {
                 first_name: '',
                 last_name: '',
                 email: '',
-                base_hourly_rate: '',
+                daily_hours: 8,
                 analyst_level: 'L1',
             });
         } catch (err) {
@@ -97,7 +97,8 @@ export default function AnalystManagement() {
                             first_name: '',
                             last_name: '',
                             email: '',
-                            base_hourly_rate: '',
+                            daily_hours: 8,
+                            analyst_level: 'L1',
                         });
                     }}
                     className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600"
@@ -123,14 +124,12 @@ export default function AnalystManagement() {
                     <div className="grid grid-cols-2 gap-4">
                         <input
                             type="text"
-                            placeholder="Employee ID"
+                            placeholder="Employee ID (optional, auto-generated if empty)"
                             value={formData.employee_id}
                             onChange={(e) =>
                                 setFormData({ ...formData, employee_id: e.target.value })
                             }
                             className="border rounded px-3 py-2"
-                            required
-                            disabled={editingId !== null}
                         />
                         <input
                             type="text"
@@ -164,18 +163,18 @@ export default function AnalystManagement() {
                         />
                         <input
                             type="number"
-                            placeholder="Base Hourly Rate"
-                            value={formData.base_hourly_rate}
+                            placeholder="Daily Hours"
+                            value={formData.daily_hours}
                             onChange={(e) =>
                                 setFormData({
                                     ...formData,
-                                    base_hourly_rate: parseFloat(e.target.value),
+                                    daily_hours: parseFloat(e.target.value),
                                 })
                             }
                             className="border rounded px-3 py-2"
                             required
-                            step="0.01"
-                            min="0"
+                            step="0.5"
+                            min="1"
                         />
                         <select
                             value={formData.analyst_level}
@@ -238,8 +237,7 @@ export default function AnalystManagement() {
                                         ID: {analyst.employee_id} | Email: {analyst.email}
                                     </p>
                                     <p className="text-gray-700">
-                                        <span className="font-semibold">Base Rate:</span> €
-                                        {analyst.base_hourly_rate}/hour
+                                        <span className="font-semibold">Daily Hours:</span> {analyst.daily_hours || 8}
                                     </p>
                                     <p className="text-gray-600 text-sm">
                                         Status: <span className="capitalize">{analyst.status}</span>

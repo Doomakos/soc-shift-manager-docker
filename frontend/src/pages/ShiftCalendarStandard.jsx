@@ -71,6 +71,19 @@ export default function ShiftCalendarStandard() {
     const [bulkMode, setBulkMode] = useState(false);
     const [bulkSelection, setBulkSelection] = useState([]);
 
+    const sortAnalystsByLevelAndName = (items) => {
+        const levelOrder = { L1: 0, L2: 1 };
+        return [...items].sort((a, b) => {
+            const levelDiff = (levelOrder[a.analyst_level] ?? 99) - (levelOrder[b.analyst_level] ?? 99);
+            if (levelDiff !== 0) return levelDiff;
+
+            const lastNameDiff = (a.last_name || '').localeCompare((b.last_name || ''), undefined, { sensitivity: 'base' });
+            if (lastNameDiff !== 0) return lastNameDiff;
+
+            return (a.first_name || '').localeCompare((b.first_name || ''), undefined, { sensitivity: 'base' });
+        });
+    };
+
     useEffect(() => {
         fetchData();
     }, [currentDate]);
@@ -82,7 +95,7 @@ export default function ShiftCalendarStandard() {
                 analystAPI.getAll(),
                 shiftAPI.getTemplates(),
             ]);
-            setAnalysts(analystsRes.data);
+            setAnalysts(sortAnalystsByLevelAndName(analystsRes.data));
             setShiftTemplates(templatesRes.data);
 
             // Fetch shifts for the current month

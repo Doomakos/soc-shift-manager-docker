@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { payRuleAPI } from '../api';
-import { Plus, Trash2, Loader } from 'lucide-react';
+import { payRuleAPI, settingsAPI } from '../api';
+import { Plus, Trash2, Loader, Settings, Power } from 'lucide-react';
 
 const DAY_NAMES = [
     'Monday',
@@ -14,6 +14,8 @@ const DAY_NAMES = [
 
 export default function PayRulesManagement() {
     const [rules, setRules] = useState([]);
+    const [payrollEnabled, setPayrollEnabled] = useState(true);
+    const [savingSettings, setSavingSettings] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showForm, setShowForm] = useState(false);
@@ -31,19 +33,48 @@ export default function PayRulesManagement() {
     const fetchRules = async () => {
         try {
             setLoading(true);
-            const response = await payRuleAPI.getAll();
-            setRules(response.data);
+            const [settingsResponse, rulesResponse] = await Promise.all([
+                settingsAPI.get(),
+                payRuleAPI.getAll().catch(() => ({ data: [] })),
+            ]);
+
+            setPayrollEnabled(!!settingsResponse.data?.payroll_enabled);
+            setRules(Array.isArray(rulesResponse.data) ? rulesResponse.data : []);
             setError(null);
         } catch (err) {
-            setError('Failed to load pay rules');
+            setError('Failed to load settings');
             console.error(err);
         } finally {
             setLoading(false);
         }
     };
 
+    const handleTogglePayroll = async () => {
+        try {
+            setSavingSettings(true);
+            const next = !payrollEnabled;
+            await settingsAPI.update({ payroll_enabled: next });
+            setPayrollEnabled(next);
+            if (next) {
+                const response = await payRuleAPI.getAll();
+                setRules(response.data);
+            } else {
+                setRules([]);
+            }
+            setError(null);
+        } catch (err) {
+            setError(err.response?.data?.error || 'Failed to update payroll setting');
+        } finally {
+            setSavingSettings(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!payrollEnabled) {
+            setError('Enable payroll from settings before editing pay rules');
+            return;
+        }
         try {
             const data = {
                 ...formData,
@@ -67,6 +98,7 @@ export default function PayRulesManagement() {
 
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure?')) return;
+        if (!payrollEnabled) return;
         try {
             await payRuleAPI.update(id, { active: false });
             fetchRules();
@@ -86,13 +118,37 @@ export default function PayRulesManagement() {
     return (
         <div className="container mx-auto p-6">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Pay Rules Configuration</h1>
+                <h1 className="text-3xl font-bold flex items-center gap-3">
+                    <Settings size={30} />
+                    App Settings
+                </h1>
                 <button
                     onClick={() => setShowForm(!showForm)}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600"
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600 disabled:opacity-50"
+                    disabled={!payrollEnabled}
                 >
                     <Plus size={20} /> Add Pay Rule
                 </button>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow-md mb-6 border-l-4 border-indigo-500">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl font-semibold flex items-center gap-2">
+                            <Power size={20} /> Payroll Functionality
+                        </h2>
+                        <p className="text-gray-600 text-sm mt-1">
+                            Toggle payroll multipliers and pay-rules usage system-wide.
+                        </p>
+                    </div>
+                    <button
+                        onClick={handleTogglePayroll}
+                        disabled={savingSettings}
+                        className={`px-4 py-2 rounded-lg text-white font-semibold ${payrollEnabled ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-500 hover:bg-gray-600'} disabled:opacity-50`}
+                    >
+                        {savingSettings ? 'Saving...' : payrollEnabled ? 'Enabled' : 'Disabled'}
+                    </button>
+                </div>
             </div>
 
             {error && (
@@ -101,7 +157,7 @@ export default function PayRulesManagement() {
                 </div>
             )}
 
-            {showForm && (
+            {showForm && payrollEnabled && (
                 <form
                     onSubmit={handleSubmit}
                     className="bg-white p-6 rounded-lg shadow-md mb-6 border-l-4 border-blue-500"
@@ -176,7 +232,11 @@ export default function PayRulesManagement() {
             )}
 
             <div className="grid gap-4">
-                {rules.length === 0 ? (
+                {!payrollEnabled ? (
+                    <div className="text-center py-8 text-gray-500">
+                        Payroll is disabled. Enable it from settings to manage pay rules.
+                    </div>
+                ) : rules.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
                         No pay rules configured.
                     </div>

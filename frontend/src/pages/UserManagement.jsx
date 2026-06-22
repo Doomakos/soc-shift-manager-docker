@@ -18,7 +18,12 @@ export default function UserManagement() {
         email: '',
         password: '',
         role: '',
-        analyst_id: ''
+        analyst_id: '',
+        first_name: '',
+        last_name: '',
+        analyst_level: 'L1',
+        daily_hours: 8,
+        create_analyst: false,
     });
 
     const roles = [
@@ -71,13 +76,23 @@ export default function UserManagement() {
             return;
         }
 
+        if (formData.create_analyst && (!formData.first_name || !formData.last_name)) {
+            alert('Please provide first name and last name for analyst creation');
+            return;
+        }
+
         try {
             const payload = {
                 username: formData.username,
                 email: formData.email,
                 password: formData.password,
                 role: formData.role,
-                analyst_id: formData.analyst_id || null
+                analyst_id: formData.create_analyst ? null : (formData.analyst_id || null),
+                create_analyst: formData.create_analyst,
+                first_name: formData.create_analyst ? formData.first_name : undefined,
+                last_name: formData.create_analyst ? formData.last_name : undefined,
+                analyst_level: formData.create_analyst ? formData.analyst_level : undefined,
+                daily_hours: formData.create_analyst ? Number(formData.daily_hours || 8) : undefined,
             };
 
             await api.post('/users', payload);
@@ -196,7 +211,12 @@ export default function UserManagement() {
             email: user.email,
             password: '',
             role: '',
-            analyst_id: ''
+            analyst_id: '',
+            first_name: '',
+            last_name: '',
+            analyst_level: 'L1',
+            daily_hours: 8,
+            create_analyst: false,
         });
         setShowApproveModal(true);
     };
@@ -209,7 +229,12 @@ export default function UserManagement() {
             password: '',
             role: user.role,
             analyst_id: user.analyst_id || '',
-            status: user.status
+            status: user.status,
+            first_name: '',
+            last_name: '',
+            analyst_level: 'L1',
+            daily_hours: 8,
+            create_analyst: false,
         });
         setShowEditModal(true);
     };
@@ -220,7 +245,12 @@ export default function UserManagement() {
             email: '',
             password: '',
             role: '',
-            analyst_id: ''
+            analyst_id: '',
+            first_name: '',
+            last_name: '',
+            analyst_level: 'L1',
+            daily_hours: 8,
+            create_analyst: false,
         });
     };
 
@@ -394,7 +424,14 @@ export default function UserManagement() {
                                     <label className="block text-sm font-semibold mb-1">Role *</label>
                                     <select
                                         value={formData.role}
-                                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                        onChange={(e) => {
+                                            const role = e.target.value;
+                                            setFormData({
+                                                ...formData,
+                                                role,
+                                                analyst_level: role === 'l2_analyst' ? 'L2' : formData.analyst_level,
+                                            });
+                                        }}
                                         className="w-full border rounded px-3 py-2"
                                         required
                                     >
@@ -407,20 +444,87 @@ export default function UserManagement() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Link to Analyst (Optional)</label>
-                                    <select
-                                        value={formData.analyst_id}
-                                        onChange={(e) => setFormData({ ...formData, analyst_id: e.target.value })}
-                                        className="w-full border rounded px-3 py-2"
-                                    >
-                                        <option value="">-- None --</option>
-                                        {getAvailableAnalysts().map((analyst) => (
-                                            <option key={analyst.id} value={analyst.id}>
-                                                {analyst.first_name} {analyst.last_name} (ID: {analyst.employee_id})
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <label className="inline-flex items-center gap-2 text-sm font-semibold mb-1">
+                                        <input
+                                            type="checkbox"
+                                            checked={!!formData.create_analyst}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                create_analyst: e.target.checked,
+                                                analyst_level: e.target.checked && formData.role === 'l2_analyst' ? 'L2' : formData.analyst_level,
+                                                analyst_id: e.target.checked ? '' : formData.analyst_id,
+                                            })}
+                                            className="rounded"
+                                        />
+                                        Create Analyst?
+                                    </label>
                                 </div>
+
+                                {formData.create_analyst ? (
+                                    <>
+                                        <div>
+                                            <label className="block text-sm font-semibold mb-1">First Name *</label>
+                                            <input
+                                                type="text"
+                                                value={formData.first_name}
+                                                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                                                className="w-full border rounded px-3 py-2"
+                                                required={formData.create_analyst}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold mb-1">Last Name *</label>
+                                            <input
+                                                type="text"
+                                                value={formData.last_name}
+                                                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                                                className="w-full border rounded px-3 py-2"
+                                                required={formData.create_analyst}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold mb-1">Analyst Level</label>
+                                            <select
+                                                value={formData.analyst_level}
+                                                onChange={(e) => setFormData({ ...formData, analyst_level: e.target.value })}
+                                                className="w-full border rounded px-3 py-2"
+                                            >
+                                                <option value="L1">Level 1 (Shift Work)</option>
+                                                <option value="L2">Level 2 (Standby)</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold mb-1">Daily Hours</label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                step="0.5"
+                                                value={formData.daily_hours}
+                                                onChange={(e) => setFormData({ ...formData, daily_hours: e.target.value })}
+                                                className="w-full border rounded px-3 py-2"
+                                            />
+                                        </div>
+                                        <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm text-blue-800">
+                                            Employee ID will be auto-generated by the app. You can edit it later from Analyst Management.
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div>
+                                        <label className="block text-sm font-semibold mb-1">Link to Analyst (Optional)</label>
+                                        <select
+                                            value={formData.analyst_id}
+                                            onChange={(e) => setFormData({ ...formData, analyst_id: e.target.value })}
+                                            className="w-full border rounded px-3 py-2"
+                                        >
+                                            <option value="">-- None --</option>
+                                            {getAvailableAnalysts().map((analyst) => (
+                                                <option key={analyst.id} value={analyst.id}>
+                                                    {analyst.first_name} {analyst.last_name} (ID: {analyst.employee_id})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
                             </div>
                             <div className="flex gap-3 mt-6">
                                 <button
